@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Garden Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes bounce-once {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .plant-enter {
+            animation: bounce-once 1s ease-out;
+        }
+        .nav-link {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .nav-link:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-sky-100 to-green-50 p-8">
+    <!-- Navigation Link -->
+    <div class="text-center mb-4">
+        <a href="scratch.html" class="nav-link">Go to Scratch</a>
+    </div>
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 mb-6">
+            <div class="text-center mb-6">
+                <h1 class="text-4xl font-bold text-green-700 mb-2">🌱 Math Garden</h1>
+                <p class="text-gray-600">Solve equations to grow your garden!</p>
+            </div>
+
+            <div class="bg-green-50 rounded-2xl p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="text-lg font-semibold text-green-800">
+                        Score: <span class="text-2xl" id="score">0</span>
+                    </div>
+                    <div class="text-lg font-semibold text-blue-800">
+                        Level: <span class="text-2xl" id="level">1</span>
+                    </div>
+                    <button onclick="resetGame()" class="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                        🔄 Reset
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-gray-800 mb-4" id="equation">? + ? = ?</div>
+                    
+                    <div class="flex gap-3 justify-center items-center">
+                        <input type="number" id="answer-input" class="w-32 px-4 py-3 text-2xl text-center border-2 border-green-300 rounded-xl focus:outline-none focus:border-green-500" placeholder="?" autofocus>
+                        <button onclick="checkAnswer()" class="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                            Check
+                        </button>
+                    </div>
+
+                    <div class="mt-4 flex justify-center gap-2" id="attempts">
+                        <div class="w-3 h-3 rounded-full bg-gray-300"></div>
+                        <div class="w-3 h-3 rounded-full bg-gray-300"></div>
+                        <div class="w-3 h-3 rounded-full bg-gray-300"></div>
+                    </div>
+
+                    <div id="feedback" class="mt-4 p-3 rounded-lg font-semibold hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-b from-amber-100 to-green-200 rounded-3xl shadow-xl p-8 min-h-[300px]">
+            <h2 class="text-2xl font-bold text-green-800 mb-4 text-center">
+                Your Garden (<span id="plant-count">0</span> plants)
+            </h2>
+            <div id="garden" class="flex flex-wrap gap-4 justify-center items-end min-h-[200px]">
+                <p class="text-gray-500 text-center w-full">
+                    Solve equations to start growing plants!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEquation = { answer: 0 };
+        let attempts = 0;
+        let plants = [];
+        let score = 0;
+        let level = 1;
+        let gameOver = false;
+
+        function generateEquation() {
+            const operations = ['+', '-', '×', '÷'];
+            let op, num1, num2, answer;
+
+            if (level <= 3) {
+                op = operations[Math.floor(Math.random() * 2)];
+                if (op === '+') {
+                    num1 = Math.floor(Math.random() * (20 + level * 10)) + 1;
+                    num2 = Math.floor(Math.random() * (20 + level * 10)) + 1;
+                    answer = num1 + num2;
+                } else {
+                    num1 = Math.floor(Math.random() * (30 + level * 10)) + 20;
+                    num2 = Math.floor(Math.random() * num1);
+                    answer = num1 - num2;
+                }
+            } else if (level <= 6) {
+                op = operations[Math.floor(Math.random() * 3)];
+                if (op === '+') {
+                    num1 = Math.floor(Math.random() * (30 + level * 10)) + 10;
+                    num2 = Math.floor(Math.random() * (30 + level * 10)) + 10;
+                    answer = num1 + num2;
+                } else if (op === '-') {
+                    num1 = Math.floor(Math.random() * (40 + level * 10)) + 30;
+                    num2 = Math.floor(Math.random() * num1);
+                    answer = num1 - num2;
+                } else {
+                    num1 = Math.floor(Math.random() * Math.min(12, level + 3)) + 2;
+                    num2 = Math.floor(Math.random() * Math.min(12, level + 2)) + 2;
+                    answer = num1 * num2;
+                }
+            } else if (level <= 10) {
+                op = operations[Math.floor(Math.random() * 4)];
+                if (op === '+') {
+                    num1 = Math.floor(Math.random() * (level * 15)) + 30;
+                    num2 = Math.floor(Math.random() * (level * 15)) + 30;
+                    answer = num1 + num2;
+                } else if (op === '-') {
+                    num1 = Math.floor(Math.random() * (level * 15)) + 80;
+                    num2 = Math.floor(Math.random() * num1);
+                    answer = num1 - num2;
+                } else if (op === '×') {
+                    num1 = Math.floor(Math.random() * (level + 3)) + 4;
+                    num2 = Math.floor(Math.random() * (level + 2)) + 4;
+                    answer = num1 * num2;
+                } else {
+                    num2 = Math.floor(Math.random() * 10) + 2;
+                    answer = Math.floor(Math.random() * 15) + 2;
+                    num1 = num2 * answer;
+                }
+            } else {
+                op = operations[Math.floor(Math.random() * 4)];
+                if (op === '+') {
+                    num1 = Math.floor(Math.random() * (level * 20)) + 50;
+                    num2 = Math.floor(Math.random() * (level * 20)) + 50;
+                    answer = num1 + num2;
+                } else if (op === '-') {
+                    num1 = Math.floor(Math.random() * (level * 20)) + 100;
+                    num2 = Math.floor(Math.random() * num1);
+                    answer = num1 - num2;
+                } else if (op === '×') {
+                    num1 = Math.floor(Math.random() * (level + 5)) + 5;
+                    num2 = Math.floor(Math.random() * (level + 3)) + 5;
+                    answer = num1 * num2;
+                } else {
+                    num2 = Math.floor(Math.random() * 15) + 3;
+                    answer = Math.floor(Math.random() * 20) + 5;
+                    num1 = num2 * answer;
+                }
+            }
+
+            currentEquation = { num1, num2, op, answer };
+            document.getElementById('equation').textContent = `${num1} ${op} ${num2} = ?`;
+        }
+
+        function checkAnswer() {
+            if (gameOver) return;
+            
+            const userAnswer = parseInt(document.getElementById('answer-input').value);
+            if (isNaN(userAnswer)) return;
+
+            if (userAnswer === currentEquation.answer) {
+                const plantTypes = ['flower', 'bush', 'tree', 'cactus', 'mushroom', 'sunflower'];
+                const colors = ['#10b981', '#22c55e', '#34d399', '#4ade80', '#059669', '#047857'];
+                const accentColors = ['#fbbf24', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444', '#06b6d4'];
+                
+                const newPlant = {
+                    type: plantTypes[Math.floor(Math.random() * plantTypes.length)],
+                    size: Math.floor(Math.random() * 3) + 1,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    accentColor: accentColors[Math.floor(Math.random() * accentColors.length)]
+                };
+                
+                plants.push(newPlant);
+                score += (3 - attempts) * 10 * level;
+                level++;
+                
+                document.getElementById('score').textContent = score;
+                document.getElementById('level').textContent = level;
+                
+                showFeedback(`Correct! 🌱 Level ${level}!`, true);
+                renderGarden();
+                
+                attempts = 0;
+                updateAttempts();
+                document.getElementById('answer-input').value = '';
+                
+                setTimeout(() => {
+                    hideFeedback();
+                    generateEquation();
+                }, 1500);
+            } else {
+                attempts++;
+                updateAttempts();
+                
+                if (attempts >= 3) {
+                    showFeedback(`Wrong! The answer was ${currentEquation.answer}. Try the next one!`, false);
+                    gameOver = true;
+                    document.getElementById('answer-input').value = '';
+                    
+                    setTimeout(() => {
+                        hideFeedback();
+                        attempts = 0;
+                        gameOver = false;
+                        updateAttempts();
+                        generateEquation();
+                    }, 2000);
+                } else {
+                    showFeedback(`Not quite! ${3 - attempts} ${3 - attempts === 1 ? 'try' : 'tries'} left.`, false);
+                    document.getElementById('answer-input').value = '';
+                }
+            }
+        }
+
+        function updateAttempts() {
+            const attemptsDiv = document.getElementById('attempts');
+            attemptsDiv.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = `w-3 h-3 rounded-full ${i < attempts ? 'bg-red-400' : 'bg-gray-300'}`;
+                attemptsDiv.appendChild(dot);
+            }
+        }
+
+        function showFeedback(message, isCorrect) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `mt-4 p-3 rounded-lg font-semibold ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback').className = 'mt-4 p-3 rounded-lg font-semibold hidden';
+        }
+
+        function renderGarden() {
+            const garden = document.getElementById('garden');
+            garden.innerHTML = '';
+            
+            document.getElementById('plant-count').textContent = plants.length;
+            
+            plants.forEach((plant, index) => {
+                const plantDiv = document.createElement('div');
+                plantDiv.className = 'plant-enter';
+                plantDiv.innerHTML = createPlantSVG(plant);
+                garden.appendChild(plantDiv);
+            });
+        }
+
+        function createPlantSVG(plant) {
+            const baseSize = plant.size * 20 + 40;
+            const height = plant.size * 30 + 60;
+            
+            let svg = '';
+            
+            switch(plant.type) {
+                case 'flower':
+                    svg = `<svg width="${baseSize}" height="${height}" viewBox="0 0 100 150">
+                        <rect x="45" y="80" width="10" height="70" fill="#2d5016" />
+                        <ellipse cx="35" cy="90" rx="15" ry="8" fill="#059669" />
+                        <ellipse cx="65" cy="90" rx="15" ry="8" fill="#059669" />
+                        <circle cx="50" cy="50" r="25" fill="${plant.accentColor}" />
+                        <circle cx="35" cy="60" r="18" fill="${plant.accentColor}" opacity="0.9" />
+                        <circle cx="65" cy="60" r="18" fill="${plant.accentColor}" opacity="0.9" />
+                        <circle cx="50" cy="70" r="18" fill="${plant.accentColor}" opacity="0.9" />
+                        <circle cx="50" cy="35" r="18" fill="${plant.accentColor}" opacity="0.9" />
+                        <circle cx="50" cy="50" r="10" fill="#fbbf24" />
+                    </svg>`;
+                    break;
+                case 'bush':
+                    svg = `<svg width="${baseSize}" height="${height}" viewBox="0 0 100 150">
+                        <rect x="42" y="100" width="16" height="50" fill="#654321" />
+                        <circle cx="50" cy="80" r="35" fill="${plant.color}" opacity="0.9" />
+                        <circle cx="30" cy="90" r="28" fill="${plant.color}" opacity="0.85" />
+                        <circle cx="70" cy="90" r="28" fill="${plant.color}" opacity="0.85" />
+                        <circle cx="50" cy="105" r="25" fill="${plant.color}" />
+                        <circle cx="45" cy="75" r="8" fill="${plant.accentColor}" />
+                        <circle cx="60" cy="85" r="6" fill="${plant.accentColor}" />
+                        <circle cx="35" cy="95" r="7" fill="${plant.accentColor}" />
+                    </svg>`;
+                    break;
+                case 'tree':
+                    svg = `<svg width="${baseSize}" height="${height}" viewBox="0 0 100 150">
+                        <rect x="40" y="90" width="20" height="60" fill="#654321" />
+                        <polygon points="50,30 20,90 80,90" fill="${plant.color}" opacity="0.9" />
+                        <polygon points="50,50 25,95 75,95" fill="${plant.color}" opacity="0.85" />
+                        <polygon points="50,70 30,100 70,100" fill="${plant.color}" />
+                        <circle cx="30" cy="75" r="5" fill="${plant.accentColor}" />
+                        <circle cx="55" cy="60" r="6" fill="${plant.accentColor}" />
+                    </svg>`;
+                    break;
+                case 'cactus':
+                    svg = `<svg width="${baseSize}" height="${height}" viewBox="0 0 100 150">
+                        <rect x="40" y="60" width="20" height="90" rx="10" fill="${plant.color}" />
+                        <rect x="25" y="80" width="15" height="35" rx="7" fill="${plant.color}" opacity="0.9" />
+                        <rect x="60" y="75" width="15" height="40" rx="7" fill="${plant.color}" opacity="0.9" />
+                        <line x1="45" y1="70" x2="45" y2="140" stroke="#047857" stroke-width="1" />
+                        <line x1="55" y1="70" x2="55" y2="140" stroke="#047857" stroke-width="1" />
+                        <circle cx="50" cy="55" r="6" fill="${plant.accentColor}" />
+                        <circle cx="35" cy="95" r="4" fill="${plant.accentColor}" />
+                        <circle cx="65" cy="90" r="4" fill="${plant.accentColor}" />
+                    </svg>`;
+                    break;
+                case 'mushroom':
+                    svg = `<svg width="${baseSize}" height="${height}" viewBox="0 0 100 150">
+                        <rect x="42" y="90" width="16" height="60" fill="#f5e6d3" />
+                        <ellipse cx="50" cy="90" rx="45" ry="30" fill="${plant.accentColor}" />
+                        <ellipse cx="50" cy="95" rx="40" ry="20" fill="${plant.accentColor}" opacity="0.8" />
+                        <circle cx="35" cy="85" r="8" fill="#ffffff" opacity="0.7" />
+                        <circle cx="55" cy="80" r="6" fill="#ffffff" opacity="0.7" />
+                        <circle cx="65" cy="90" r="7" fill="#ffffff" opacity="0.7" />
+                    </svg>`;
+                    break;
+                case 'sunflower':
+                    svg = `<svg width="${baseSize}" height="${height}" viewBox="0 0 100 150">
+                        <rect x="45" y="70" width="10" height="80" fill="#2d5016" />
+                        <ellipse cx="30" cy="100" rx="18" ry="10" fill="#059669" />
+                        <ellipse cx="70" cy="95" rx="18" ry="10" fill="#059669" />
+                        <circle cx="50" cy="45" r="30" fill="#fbbf24" />
+                        <circle cx="30" cy="55" r="15" fill="#fbbf24" />
+                        <circle cx="70" cy="55" r="15" fill="#fbbf24" />
+                        <circle cx="50" cy="25" r="15" fill="#fbbf24" />
+                        <circle cx="35" cy="32" r="12" fill="#fbbf24" />
+                        <circle cx="65" cy="32" r="12" fill="#fbbf24" />
+                        <circle cx="50" cy="45" r="15" fill="#92400e" />
+                        <circle cx="48" cy="42" r="3" fill="#000" />
+                        <circle cx="52" cy="42" r="3" fill="#000" />
+                    </svg>`;
+                    break;
+            }
+            
+            return svg;
+        }
+
+        function resetGame() {
+            plants = [];
+            score = 0;
+            level = 1;
+            attempts = 0;
+            gameOver = false;
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('answer-input').value = '';
+            
+            updateAttempts();
+            hideFeedback();
+            
+            const garden = document.getElementById('garden');
+            garden.innerHTML = '<p class="text-gray-500 text-center w-full">Solve equations to start growing plants!</p>';
+            document.getElementById('plant-count').textContent = 0;
+            
+            generateEquation();
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('answer-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Initialize game
+        generateEquation();
+    </script>
+</body>
+</html>

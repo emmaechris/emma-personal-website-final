@@ -1,0 +1,116 @@
+body {    /* 4 style defintions...*/
+    font-family: fantasy;
+    font-size: large;
+}
+h1 {
+    display: block;
+}
+li {
+    font-family: cursive;
+    font-size: 25px;
+}
+ul {
+    color: rgb(0, 0, 0);
+}
+a:link { /*color for unvisited links*/
+    color: rgb(22, 101, 238);
+}
+a:visited { /*color for visited links*/
+    color: rgb(79, 22, 238);
+}
+.homebg {
+    background-image: url(../Images/light-blue-particle-background.avif);
+    background-position: top left;
+    background-size: 100%;
+}
+/* styles that specify font color*/
+/* styles that specify font family*/
+/*At least three divs for positioning and 
+styling blocks of content in the HTML page*/ 
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 80px;
+}
+.header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid black;
+    text-align: center;
+}       
+.side-by-side {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
+    align-items: flex-start;
+    justify-content: center;
+}
+.img {
+    flex-shrink: 0;
+}
+.img img {
+    width: 450px;
+    height: auto;
+    margin: 0;
+}
+.list {
+    flex-grow: 1;
+    margin-top: 0;
+}
+.youtube {
+    margin-bottom: 40px;
+    text-align: center;
+}
+.youtube iframe{
+    width: 70%;
+    height: 500px;
+    display: block;
+    margin: 0 auto;
+}
+.tableau {
+    margin-bottom: 40px;
+    width: 100%;
+    min-height: 2750px;
+    text-align: center !important;
+    overflow: hidden;
+}
+.tableauPlaceholder {
+    margin: 0 auto !important;
+    display: inline-block !important;
+    text-align: left !important;
+}
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgb(182, 214, 241, 0.95);
+    border-top: 3px solid rgb(182, 214, 241, 0.95);
+    padding: 10px 0;
+    text-align: center;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+footer a {
+    color: rgb(2, 2, 2);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+footer a:hover {
+    color: rgb(6, 5, 9);
+}
+@media (max-width: 768px) {
+    .side-by-side {
+        flex-direction: column;
+    }
+    .img, .list {
+        margin: 0;
+    }
+}
